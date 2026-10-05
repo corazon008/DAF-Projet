@@ -8,7 +8,8 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
-    "kaggle>=2.2.4",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
 ]
 
 [project.scripts]
@@ -17,3 +18,8 @@ daf-projet = "daf_projet:main"
 [build-system]
 requires = ["uv_build>=0.12.23,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+]
