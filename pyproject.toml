@@ -1,0 +1,19 @@
+[project]
+name = "daf-projet"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "corazon", email = "99136079+corazon008@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "kaggle>=2.2.4",
+]
+
+[project.scripts]
+daf-projet = "daf_projet:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
