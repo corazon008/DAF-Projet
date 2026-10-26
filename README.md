@@ -12,7 +12,7 @@ stratégie DDoS jamais rencontrée ?**
 | E1 — binaire vs multiclasses | Q2 | Macro-F1 chute à ≈ 0,75 en 13 classes ; l'ablation de `Protocol` ne change presque rien |
 | E2 — Leave-One-Attack-Out | Q1 | Dix familles sur onze restent au-dessus de 0,96 ; **Syn** s'effondre avec la RF (0,60) mais pas avec la logreg (0,97) |
 | E3 — réduction de features | Q3/Q4 | Une fraction des variables conserve l'essentiel de la performance ; le gain de latence du RF est limité |
-| XAI | Interprétation | Features de taille de paquet et de débit dominantes ; SHAP non requis |
+| XAI | Interprétation | Champs d’en-tête TCP, fenêtres initiales et débit dominants ; SHAP non requis |
 
 Les chiffres exacts sont dans `results/` et dans `rapport/`.
 
@@ -104,7 +104,9 @@ ne retrainent pas sur un split différent.
 | `exp1` | ~15–25 min (données complètes, 9 fits) |
 | `exp2` | ~30–45 min (99 fits + 11 attributions) |
 | `exp3` | ~15–25 min (30 fits, cap 20k/classe) |
+| `sibling` | ~10–15 min (6 fits, purge des deux labels) |
 | Notebook XAI | ~3–5 min (modèles de diagnostic cap 10k/classe) |
+| `build_report.py` + `build_slides.py` | ~10–20 s (Pandoc + xelatex) |
 
 ## Arborescence
 

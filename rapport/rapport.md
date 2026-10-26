@@ -391,8 +391,8 @@ fragile et dépend de `ACK Flag Count`, `Idle Max` et `Init Fwd Win Bytes`.
 
 Les galeries FP/FN (`results/xai_fp_fn_e1.csv`, `results/xai_fp_fn_e2_*.csv`)
 montrent ce que verrait un analyste : quelques flux Benign avec un profil
-d'en-tête et de débit agressif, et des attaques dont le débit reste sous le
-seuil appris.  Les faux négatifs sur une famille inconnue sont plus dangereux
+d'en-tête et de débit agressif, et des attaques Syn à faible débit et faible
+taux de paquets.  Les faux négatifs sur une famille inconnue sont plus dangereux
 qu'une erreur d'attribution : aucune règle existante ne couvre cette famille.
 
 *Limite.*  L'importance par permutation dépend du modèle et de l'échantillon de
