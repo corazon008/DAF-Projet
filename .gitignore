@@ -8,6 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Dataset artefacts: parquet is the source of truth
+dataset/*.zip
+dataset/*.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -228,3 +232,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+/figures
+/results

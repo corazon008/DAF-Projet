@@ -1,15 +1,19 @@
 [project]
 name = "daf-projet"
 version = "0.1.0"
-description = "Add your description here"
+description = "Détection DDoS et généralisation à des attaques non observées"
 readme = "README.md"
 authors = [
     { name = "corazon", email = "99136079+corazon008@users.noreply.github.com" }
 ]
 requires-python = ">=3.14"
 dependencies = [
+    "matplotlib>=3.11.2",
     "pandas>=3.0.6",
     "pyarrow>=25.0.1",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+    "seaborn>=0.13.2",
 ]
 
 [project.scripts]
@@ -22,4 +26,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ipykernel>=7.4.0",
+    "nbclient>=0.11.0",
+    "nbconvert>=7.17.2",
+    "pypandoc-binary>=1.17",
 ]
