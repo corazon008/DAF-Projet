@@ -176,9 +176,9 @@ Benign/DDoS, puis 13 classes (Benign + 12 types d'attaque obtenus en fusionnant
 | 13 classes | Dummy | 0.0763 | 0.2080 | 0.2082 | 0.0768 | 0.4996 |
 | 13 classes | LogReg | 0.6029 | 0.9440 | 0.9310 | 0.5932 | 0.9887 |
 | 13 classes | RF | 0.7566 | 0.9816 | 0.9815 | 0.7786 | 0.9945 |
-| 13 classes sans Protocol | Dummy | 0.0763 | 0.2080 | 0.2082 | 0.0768 | 0.4996 |
-| 13 classes sans Protocol | LogReg | 0.6007 | 0.9439 | 0.9308 | 0.5920 | 0.9886 |
-| 13 classes sans Protocol | RF | 0.7577 | 0.9817 | 0.9816 | 0.7790 | 0.9948 |
+| Sans Protocol | Dummy | 0.0763 | 0.2080 | 0.2082 | 0.0768 | 0.4996 |
+| Sans Protocol | LogReg | 0.6007 | 0.9439 | 0.9308 | 0.5920 | 0.9886 |
+| Sans Protocol | RF | 0.7577 | 0.9817 | 0.9816 | 0.7790 | 0.9948 |
 
 ![Macro-F1 et Weighted-F1](../figures/03_exp1_macro_weighted_f1.png){width=88%}
 
@@ -259,8 +259,6 @@ Le FPR reste bas : c'est le **rappel** qui s'effondre, donc des attaques Syn ne
 sont pas vues.  L'écart est donc concentré sur une famille et dépend du modèle,
 pas seulement de la famille.
 
-![Rappel et FPR](../figures/04_exp2_recall_fpr.png){width=88%}
-
 ## 5.3 Matrice de confusion vers les familles connues
 
 Pour chaque famille inconnue, un modèle multiclasses plus léger, entraîné sur
@@ -337,8 +335,6 @@ batch de 1 000 flux, preprocessing inclus.
 
 ![Performance vs nombre de features](../figures/05_exp3_performance.png){width=88%}
 
-![Latence vs nombre de features](../figures/05_exp3_latency.png){width=88%}
-
 | Variante | Latence binaire (ms/1k) | Latence 13 classes (ms/1k) |
 |---|---|---|
 | Toutes | 46.9942 | 56.9955 |
@@ -354,8 +350,6 @@ traversée des 300 arbres, pas le nombre de features.  En
 13 classes, la chute est plus nette : de 0.7708 avec toutes les
 features à 0.6627 en Top-10.  La réduction n'est donc pas gratuite
 pour les familles rares.
-
-![Accord des deux critères](../figures/05_exp3_feature_agreement.png){width=88%}
 
 **H3 est partiellement soutenue.**  **Q3 :** quelques dizaines de features
 suffisent pour l'essentiel de la performance, mais le nombre exact dépend de la
@@ -482,9 +476,9 @@ uv run python scripts/validate_results.py
 
 # Annexe B — Fichiers de résultats
 
-- `results/baseline_binary.csv`
-- `results/exp1.csv`, `results/exp1_per_class.csv`
-- `results/exp2.csv`, `results/exp2_confusion_to.csv`,
-  `results/exp2_purge_audit.csv`, `results/exp2_sibling_check.csv`
-- `results/exp3.csv`, `results/exp3_feature_ranking.csv`
-- `results/xai_permutation_e1.csv`, `results/xai_permutation_e2.csv`
+- `results/baseline_binary.csv`, `results/exp1.csv`
+- `results/exp1_per_class.csv`, `results/exp2.csv`
+- `results/exp2_confusion_to.csv`, `results/exp2_purge_audit.csv`
+- `results/exp2_sibling_check.csv`, `results/exp3.csv`
+- `results/exp3_feature_ranking.csv`, `results/xai_permutation_e1.csv`
+- `results/xai_permutation_e2.csv`
