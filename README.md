@@ -39,17 +39,17 @@ généralisation.
    ligne par empreinte.  En cas de labels contradictoires, le label majoritaire
    gagne (égalité : ordre lexicographique).  C'est déterministe et indépendant
    de l'ordre des fichiers.
-2. **Aucun preprocessing global.**  Suppression des colonnes constantes,
-   standardisation et sélection de features vivent dans une `Pipeline` ajustée
-   sur le train uniquement.
+2. **Aucun preprocessing global.**  Les colonnes constantes sont retirées sur
+   le fold d'entraînement ; standardisation et sélection de features vivent
+   dans une `Pipeline` ajustée sur le train uniquement.
 3. **Split canonique.**  Un split stratifié 80/20 sur la famille fine est créé
    une fois par graine et réutilisé par toutes les expériences ; la cible
    binaire est dérivée des mêmes lignes.
 4. **Purge LOADO sur tout le dataset.**  Pour chaque rotation, la famille
    tenue à l'écart est retirée des 17 fichiers concaténés, pas seulement du
    fichier qui porte son nom.  Les paires `DrDoS_X` / `X` restent des labels
-   distincts ; la commande `sibling` purge aussi la famille sœur et sert de
-   contrôle de robustesse.
+   distincts ; la cellule `run_sibling()` purge aussi la famille sœur et sert
+   de contrôle de robustesse.
 5. **Métriques adaptées au déséquilibre.**  Macro-F1, Weighted-F1, précision et
    rappel par classe, PR-AUC, ROC-AUC, FPR à TPR = 95 %.  L'accuracy est
    affichée mais ne sert jamais à conclure.
@@ -65,20 +65,14 @@ généralisation.
 
 ## Reproduction
 
+Tout le code d'expérimentation est dans les notebooks.  Il n'y a plus de module
+Python, de CLI ni de script de validation à lancer avant les notebooks.
+
 ```bash
 uv sync
 
-# Audit de données (formes, doublons, classes, colonnes constantes)
-uv run daf-projet smoke
-
-# Expériences (écrivent results/*.csv)
-uv run daf-projet baseline
-uv run daf-projet exp1
-uv run daf-projet exp2 --cap 20000   # 11 familles × 3 modèles × 3 graines = 99 fits
-uv run daf-projet exp3               # 3 graines, cap 20k/classe
-uv run daf-projet sibling            # contrôle : purge aussi la famille sœur
-
-# Notebooks (exécution reproductible)
+# Chaque notebook est autonome : chargement, dédoublonnage, entraînement,
+# métriques et figures.  Il écrit ses CSV dans results/.
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_baseline.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/03_exp1_binary_vs_multiclass.ipynb
@@ -86,41 +80,53 @@ uv run jupyter nbconvert --to notebook --execute --inplace notebooks/04_exp2_loa
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/05_exp3_features.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/06_xai.ipynb
 
-# Rapport et slides
+# Variante tout-en-un
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/notebook_final.ipynb
+
+# Rapport et slides (reconstruits à partir de results/)
 uv run python scripts/build_report.py
 uv run python scripts/build_slides.py
 ```
 
 Les graines sont **42, 43, 44** pour E2 et E3 ; E1 et la baseline utilisent 42.
-Les notebooks d'analyse lisent les CSV produits par les commandes ci-dessus et
-ne retrainent pas sur un split différent.
+Chaque notebook peut être exécuté seul ; `notebook_final.ipynb` enchaîne les six
+phases.
+
+> **État des résultats.**  Les CSV baseline, E2 et XAI sont complets.  Le CSV
+> E3 a été écrasé par un test réduit (`CAP=1000`, une seule graine) ; réexécuter
+> `05_exp3_features.ipynb` en entier avant de lancer `build_report.py` ou
+> `build_slides.py`.  Les PDF actuellement livrés correspondent encore aux
+> exécutions complètes précédentes.
 
 ### Temps d'exécution observés
 
-| Commande | Temps |
+| Notebook | Temps indicatif |
 |---|---|
-| `smoke` | ~20 s (lecture + hash) |
-| `baseline` | ~1 min (données complètes) |
-| `exp1` | ~15–25 min (données complètes, 9 fits) |
-| `exp2` | ~30–45 min (99 fits + 11 attributions) |
-| `exp3` | ~15–25 min (30 fits, cap 20k/classe) |
-| `sibling` | ~10–15 min (6 fits, purge des deux labels) |
-| Notebook XAI | ~3–5 min (modèles de diagnostic cap 10k/classe) |
+| `01_eda` | ~30 s (lecture + hash + figures) |
+| `02_baseline` | ~1 min (3 fits, données complètes) |
+| `03_exp1` | ~15–25 min (9 fits, données complètes) |
+| `04_exp2` | ~40–60 min (99 fits LOADO + 6 fits sibling + attributions) |
+| `05_exp3` | ~15–25 min (30 fits, cap 20k/classe) |
+| `06_xai` | ~3–5 min (modèles de diagnostic cap 10k/classe) |
+| `notebook_final` | ~1 h 30 (toutes les phases) |
 | `build_report.py` + `build_slides.py` | ~10–20 s (Pandoc + xelatex) |
 
 ## Arborescence
 
 ```
 dataset/                 # 17 parquet + zip ignoré
-src/daf_projet/
-  data.py                # load, dedupe, split, subsample, pipeline
-  metrics.py             # metrics bundle, confusion matrices
-  experiments/           # baseline, exp1, exp2, exp3, common
-notebooks/               # 01 EDA → 06 XAI
+notebooks/
+  01_eda.ipynb           # audit, doublons, familles
+  02_baseline.ipynb      # Benign / DDoS
+  03_exp1_binary_vs_multiclass.ipynb
+  04_exp2_loado.ipynb    # leave-one-attack-out + sibling
+  05_exp3_features.ipynb # réduction de features
+  06_xai.ipynb           # importance, FP/FN
+  notebook_final.ipynb   # pipeline complet
 results/                 # CSV de résultats (source des tableaux)
 figures/                 # PNG des figures
 rapport/                 # rapport, slides, script de soutenance
-scripts/                 # générateurs de notebooks et de livrables
+scripts/                 # build_report.py, build_slides.py
 ```
 
 ## Limites

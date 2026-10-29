@@ -443,9 +443,9 @@ SHAP n'est pas installé sur Python 3.14 ; aucune conclusion n'en dépend.
 
 Des outils d'IA générative ont été utilisés comme assistance pour structurer le
 code, proposer des tests de cohérence, déboguer et améliorer la rédaction.  Les
-expériences, les chiffres, les figures et les conclusions proviennent de
-commandes exécutées dans ce dépôt (`uv run daf-projet ...`).  Aucun résultat
-affirmé sans exécution n'a été conservé.  Le groupe reste responsable de
+expériences, les chiffres, les figures et les conclusions proviennent des
+notebooks exécutés dans ce dépôt.  Aucun résultat affirmé sans exécution n'a
+été conservé.  Le groupe reste responsable de
 l'ensemble du travail et doit pouvoir expliquer chaque choix méthodologique.
 
 # 10. Conclusion
@@ -464,15 +464,18 @@ globale.
 
 ```bash
 uv sync
-uv run daf-projet smoke
-uv run daf-projet baseline
-uv run daf-projet exp1
-uv run daf-projet exp2
-uv run daf-projet exp3
-uv run daf-projet sibling
-uv run jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb
-uv run python scripts/validate_results.py
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_baseline.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/03_exp1_binary_vs_multiclass.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/04_exp2_loado.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/05_exp3_features.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/06_xai.ipynb
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/notebook_final.ipynb
+uv run python scripts/build_report.py
+uv run python scripts/build_slides.py
 ```
+
+Chaque notebook est autonome et écrit ses CSV dans `results/`.
 
 # Annexe B — Fichiers de résultats
 

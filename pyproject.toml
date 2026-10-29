@@ -16,12 +16,8 @@ dependencies = [
     "seaborn>=0.13.2",
 ]
 
-[project.scripts]
-daf-projet = "daf_projet:main"
-
-[build-system]
-requires = ["uv_build>=0.12.23,<0.13.0"]
-build-backend = "uv_build"
+[tool.uv]
+package = false
 
 [dependency-groups]
 dev = [
