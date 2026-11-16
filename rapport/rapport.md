@@ -1,6 +1,6 @@
 ---
 title: "Détection DDoS et généralisation à des attaques non observées"
-subtitle: "Projet DAF — détection d'anomalies et fraude avec Python"
+subtitle: "Projet DAF - détection d'anomalies et fraude avec Python"
 date: "2026"
 lang: en
 ---
@@ -36,20 +36,20 @@ aléatoire reste modeste.
 
 Les questions d'analyse imposées sont :
 
-- **Q1** — Quelles familles DDoS généralisent le mieux vers d'autres familles ?
-- **Q2** — Un modèle très performant en binaire est-il nécessairement utile
+- **Q1** - Quelles familles DDoS généralisent le mieux vers d'autres familles ?
+- **Q2** - Un modèle très performant en binaire est-il nécessairement utile
   pour identifier le type d'attaque ?
-- **Q3** — Combien de variables sont réellement nécessaires ?
-- **Q4** — Quels résultats sont les plus importants pour une utilisation en
+- **Q3** - Combien de variables sont réellement nécessaires ?
+- **Q4** - Quels résultats sont les plus importants pour une utilisation en
   temps réel ?
 
 ## 1.2 Hypothèses
 
-- **H1** — La classification multiclasses est plus difficile que la
+- **H1** - La classification multiclasses est plus difficile que la
   classification binaire.
-- **H2** — La capacité de généralisation dépend fortement de la famille DDoS
+- **H2** - La capacité de généralisation dépend fortement de la famille DDoS
   laissée de côté.
-- **H3** — Une fraction des variables conserve une grande partie des
+- **H3** - Une fraction des variables conserve une grande partie des
   performances, avec un coût d'inférence réduit.
 
 # 2. Données et analyse exploratoire
@@ -104,12 +104,12 @@ Il est donc écarté.
 
 | Contrôle | Valeur |
 |---|---|
-| Lignes dans des groupes de doublons exacts | 21 347 |
-| Empreintes présentes dans plus d'un fichier source | 8 858 |
-| Empreintes avec labels contradictoires | 5 289 |
-| Lignes impliquées dans ces conflits | 12 957 |
-| Lignes retirées par dédoublonnage | 12 487 |
-| Lignes après dédoublonnage | 418 884 |
+| lignes dans des groupes de doublons exacts | 21 347 |
+| empreintes de caractéristiques présentes dans >1 fichier source | 8 858 |
+| empreintes de caractéristiques avec étiquettes conflictuelles | 5 289 |
+| lignes impliquées dans des empreintes de caractéristiques avec étiquettes conflictuelles | 12 957 |
+| lignes supprimées par le dédoublonnage | 12 487 |
+| lignes après le dédoublonnage | 418 884 |
 
 - 21 347 lignes sont dans des groupes de doublons exacts.
 - 8 858 empreintes de features apparaissent dans plus d'un fichier source.
@@ -158,7 +158,7 @@ TPR = 95 %.  L'accuracy est affichée mais n'est jamais utilisée pour conclure.
 Le FPR est le taux de Benign classés DDoS ; c'est la métrique opérationnelle
 la plus lisible pour un SOC.
 
-# 4. Expérience 1 — Binaire vs multiclasses (H1, Q2)
+# 4. Expérience 1 - Binaire vs multiclasses (H1, Q2)
 
 ## 4.1 Protocole
 
@@ -174,10 +174,10 @@ Benign/DDoS, puis 13 classes (Benign + 12 types d'attaque obtenus en fusionnant
 | Binaire | LogReg | 0.9949 | 0.9964 | 0.9964 | 0.9998 | 0.9994 |
 | Binaire | RF | 0.9991 | 0.9994 | 0.9994 | 1.0000 | 1.0000 |
 | 13 classes | Dummy | 0.0763 | 0.2080 | 0.2082 | 0.0768 | 0.4996 |
-| 13 classes | LogReg | 0.6029 | 0.9440 | 0.9310 | 0.5932 | 0.9887 |
+| 13 classes | LogReg | 0.6027 | 0.9440 | 0.9310 | 0.5933 | 0.9886 |
 | 13 classes | RF | 0.7566 | 0.9816 | 0.9815 | 0.7786 | 0.9945 |
 | Sans Protocol | Dummy | 0.0763 | 0.2080 | 0.2082 | 0.0768 | 0.4996 |
-| Sans Protocol | LogReg | 0.6007 | 0.9439 | 0.9308 | 0.5920 | 0.9886 |
+| Sans Protocol | LogReg | 0.6009 | 0.9438 | 0.9307 | 0.5918 | 0.9885 |
 | Sans Protocol | RF | 0.7577 | 0.9817 | 0.9816 | 0.7790 | 0.9948 |
 
 ![Macro-F1 et Weighted-F1](../figures/03_exp1_macro_weighted_f1.png){width=88%}
@@ -209,7 +209,7 @@ risque opérationnel : l'analyste reçoit une alerte mais peut appliquer la
 mauvaise contre-mesure.  *Limite.*  La fusion `DrDoS_X`/`X` masque la
 séparabilité des variantes ; c'est l'objet de E2.
 
-# 5. Expérience 2 — Leave-One-Attack-Out (H2, Q1)
+# 5. Expérience 2 - Leave-One-Attack-Out (H2, Q1)
 
 ## 5.1 Protocole
 
@@ -313,7 +313,7 @@ tenu à l'écart, et inversement) pour les paires qui ont assez de lignes.
 
 Les scores restent élevés : le résultat principal n'est pas uniquement dû à la présence de la famille sœur dans l'entraînement.
 
-# 6. Expérience 3 — Réduction de features (H3, Q3, Q4)
+# 6. Expérience 3 - Réduction de features (H3, Q3, Q4)
 
 ## 6.1 Protocole
 
@@ -337,14 +337,14 @@ batch de 1 000 flux, preprocessing inclus.
 
 | Variante | Latence binaire (ms/1k) | Latence 13 classes (ms/1k) |
 |---|---|---|
-| Toutes | 46.9942 | 56.9955 |
-| ≈ 75 % | 47.3736 | 57.3165 |
-| ≈ 50 % | 46.7709 | 57.2101 |
-| ≈ 25 % | 46.6769 | 57.2122 |
-| Top-10 | 46.9381 | 57.2527 |
+| Toutes | 33.2467 | 33.9894 |
+| ≈ 75 % | 34.4057 | 33.9697 |
+| ≈ 50 % | 33.6895 | 33.9532 |
+| ≈ 25 % | 33.9964 | 33.8498 |
+| Top-10 | 33.5952 | 23.3132 |
 
 En binaire, la variante Top-10 conserve une Macro-F1 de 0.9928
-contre 0.9989 avec toutes les features.  La latence reste essentiellement plate : 46.99 ms avec toutes les features contre 46.94 ms en Top-10 par batch de 1 000 flux.  Le gain
+contre 0.9989 avec toutes les features.  La latence reste essentiellement plate : 33.25 ms avec toutes les features contre 33.60 ms en Top-10 par batch de 1 000 flux.  Le gain
 de latence reste faible pour une forêt aléatoire : le coût dominant est la
 traversée des 300 arbres, pas le nombre de features.  En
 13 classes, la chute est plus nette : de 0.7708 avec toutes les
@@ -367,16 +367,16 @@ L'importance par permutation est calculée sur le **test**, pas sur le train.
 
 | Feature | Importance moyenne | Écart-type |
 |---|---|---|
-| Bwd Header Length | 0.0178 | 0.0001 |
-| Init Fwd Win Bytes | 0.0165 | 0.0052 |
-| Init Bwd Win Bytes | 0.0155 | 0.0004 |
-| Flow Bytes/s | 0.0116 | 0.0008 |
-| Fwd Seg Size Min | 0.0093 | 0.0006 |
-| Fwd Packet Length Min | 0.0010 | 0.0050 |
-| Flow IAT Std | 0.0010 | 0.0037 |
-| Fwd IAT Std | 0.0005 | 0.0008 |
-| Fwd IAT Total | 0.0004 | 0.0009 |
-| ACK Flag Count | 0.0003 | 0.0000 |
+| Init Fwd Win Bytes | 0.0226 | 0.0049 |
+| Bwd Header Length | 0.0208 | 0.0000 |
+| Init Bwd Win Bytes | 0.0192 | 0.0003 |
+| Fwd Packets/s | 0.0144 | 0.0032 |
+| Flow Bytes/s | 0.0136 | 0.0003 |
+| Fwd Seg Size Min | 0.0109 | 0.0015 |
+| Bwd Packets/s | 0.0103 | 0.0002 |
+| Flow Duration | 0.0078 | 0.0078 |
+| Packet Length Mean | 0.0065 | 0.0022 |
+| Fwd Packet Length Min | 0.0051 | 0.0046 |
 
 Les premières features sont des champs d'en-tête TCP et de fenêtre
 (`Bwd Header Length`, `Init Fwd Win Bytes`, `Init Bwd Win Bytes`) et un débit
@@ -460,7 +460,7 @@ choix de modèle adapté au temps réel.  Les résultats les plus importants pou
 SOC sont le rappel sur les familles rares, le FPR et la latence, pas l'accuracy
 globale.
 
-# Annexe A — Commandes de reproduction
+# Annexe A - Commandes de reproduction
 
 ```bash
 uv sync
@@ -477,7 +477,7 @@ uv run python scripts/build_slides.py
 
 Chaque notebook est autonome et écrit ses CSV dans `results/`.
 
-# Annexe B — Fichiers de résultats
+# Annexe B - Fichiers de résultats
 
 - `results/baseline_binary.csv`, `results/exp1.csv`
 - `results/exp1_per_class.csv`, `results/exp2.csv`

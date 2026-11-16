@@ -1,7 +1,7 @@
 ---
 title: "Détection DDoS et généralisation à des attaques non observées"
-shorttitle: "DDoS — généralisation"
-author: "DAF-Projet — S9"
+shorttitle: "DDoS - généralisation"
+author: "DAF-Projet - S9"
 date: "2026"
 ---
 
@@ -10,11 +10,11 @@ date: "2026"
 > Un modèle entraîné sur certaines attaques DDoS reconnaît-il une stratégie
 > DDoS jamais rencontrée ?
 
-**H1** — le multiclasses est plus difficile que le binaire.
+**H1** - le multiclasses est plus difficile que le binaire.
 
-**H2** — la généralisation dépend fortement de la famille laissée de côté.
+**H2** - la généralisation dépend fortement de la famille laissée de côté.
 
-**H3** — une fraction des variables conserve l'essentiel de la performance.
+**H3** - une fraction des variables conserve l'essentiel de la performance.
 
 ## Données : 431 371 flux, 17 familles
 
@@ -56,7 +56,7 @@ Le binaire est **facile** : une frontière linéaire suffit presque.
 
 ![](../figures/02_baseline_metrics.png){height=3.6cm}
 
-## E1 — le multiclasses casse le score
+## E1 - le multiclasses casse le score
 
 - Binaire RF : Macro-F1 = 0.999.
 - 13 classes RF : Macro-F1 = 0.757, Weighted-F1 = 0.982.
@@ -66,13 +66,13 @@ Le binaire est **facile** : une frontière linéaire suffit presque.
 
 ![](../figures/03_exp1_macro_weighted_f1.png){height=3.6cm}
 
-## E1 — les familles rares paient
+## E1 - les familles rares paient
 
 ![](../figures/03_exp1_per_class_recall.png){height=4.8cm}
 
 Le Weighted-F1 reste haut ; le Macro-F1 révèle les familles rares.
 
-## E2 — Leave-One-Attack-Out
+## E2 - Leave-One-Attack-Out
 
 - 11 familles ≥ 1 000 lignes après dédoublonnage.
 - Purge de la famille dans les 17 fichiers.
@@ -83,10 +83,10 @@ Le Weighted-F1 reste haut ; le Macro-F1 révèle les familles rares.
 
 ![](../figures/04_exp2_purge_audit.png){height=4.0cm}
 
-## E2 — la généralisation est asymétrique
+## E2 - la généralisation est asymétrique
 
 - Dix familles sur onze restent au-dessus de 0,96 (neuf au-dessus de 0,99).
-- Cas dur : **Syn** — Macro-F1 0.604 avec la RF (rappel ≈ 0,30),
+- Cas dur : **Syn** - Macro-F1 0.604 avec la RF (rappel ≈ 0,30),
   mais 0.973 avec la régression logistique.
 - Le FPR reste bas : c'est le **rappel** qui s'effondre, pas les fausses alertes.
 
@@ -94,28 +94,28 @@ Le Weighted-F1 reste haut ; le Macro-F1 révèle les familles rares.
 
 ![](../figures/04_exp2_family_model_heatmap.png){height=4.6cm}
 
-## E2 — à quelle famille connue ressemble l'inconnue ?
+## E2 - à quelle famille connue ressemble l'inconnue ?
 
 ![](../figures/04_exp2_confusion_to.png){height=4.6cm}
 
 Cette matrice est plus actionnable qu'un F1 : elle indique la famille et la
 mitigation que l'analyste va essayer en premier.
 
-## E3 — combien de features ?
+## E3 - combien de features ?
 
 - Top-10 : Macro-F1 binaire 0.993 vs 0.999 avec toutes.
-- En 13 classes : 0.663 vs 0.771 — la chute est plus nette.
-- Latence quasi identique (46.94 vs 46.99 ms/1k).
+- En 13 classes : 0.663 vs 0.771 - la chute est plus nette.
+- Latence quasi identique (33.60 vs 33.25 ms/1k).
 - Le gain de latence du RF est faible : 300 arbres dominent le coût.
 
 **H3 partiellement soutenue.**
 
 ![](../figures/05_exp3_performance.png){height=4.2cm}
 
-## XAI — ce que le modèle regarde
+## XAI - ce que le modèle regarde
 
-- Feature la plus importante : **Bwd Header Length**
-  (importance moyenne 0.018).
+- Feature la plus importante : **Init Fwd Win Bytes**
+  (importance moyenne 0.023).
 - Puis fenêtres TCP initiales (`Init Fwd/Bwd Win Bytes`) et `Flow Bytes/s`.
 - Les tailles moyennes et bulk-rates ne dominent pas ; sur Syn, ACK/URG flags
   comptent.
@@ -125,12 +125,12 @@ mitigation que l'analyste va essayer en premier.
 
 ## Réponses aux questions
 
-- **Q1** — Les familles qui généralisent le mieux recouvrent le profil
+- **Q1** - Les familles qui généralisent le mieux recouvrent le profil
   d'en-tête/fenêtre et de débit des familles vues ; Syn est l'exception pour la RF.
-- **Q2** — Non : binaire ≠ identification de famille.
-- **Q3** — Quelques dizaines de features suffisent pour l'essentiel ; les
+- **Q2** - Non : binaire ≠ identification de famille.
+- **Q3** - Quelques dizaines de features suffisent pour l'essentiel ; les
   familles rares perdent leur rappel en premier.
-- **Q4** — Rappel attaque, FPR, latence et débit ; pas l'accuracy.
+- **Q4** - Rappel attaque, FPR, latence et débit ; pas l'accuracy.
 
 ## Limites et conclusion
 
@@ -147,4 +147,4 @@ mitigation que l'analyste va essayer en premier.
    temps réel.
 4. Les métriques de décision sont le rappel par famille, le FPR et la latence.
 
-**Merci — questions.**
+**Merci - questions.**
