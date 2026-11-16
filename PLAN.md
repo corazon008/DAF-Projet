@@ -70,8 +70,6 @@ uv run python scripts/build_slides.py
 
 ## 6. État des résultats
 
-Les résultats baseline, E2 et XAI sont intacts.  Le CSV E3 a été écrasé par un
-test réduit (`CAP=1000`, une graine) ; il faut réexécuter entièrement
-`notebooks/05_exp3_features.ipynb` avant de reconstruire le rapport ou les
-slides.  Les PDF actuels correspondent encore aux résultats complets
-précédents.
+Les résultats baseline, E1, E2, E3 et XAI sont complets.  `results/exp3.csv`
+contient 30 fits (deux tâches, cinq variantes, trois graines).  Les PDF du
+rapport et des slides sont reconstruits à partir de ces CSV.

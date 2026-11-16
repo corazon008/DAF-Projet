@@ -1,150 +1,192 @@
 ---
 title: "Détection DDoS et généralisation à des attaques non observées"
-shorttitle: "DDoS - généralisation"
-author: "DAF-Projet - S9"
+shorttitle: "DDoS — généralisation"
+author: "Corentin CALVEZ et Lubin TERRIEN"
 date: "2026"
+lang: fr
+header-includes: |
+  \setbeamertemplate{caption}{}
 ---
 
-## Question centrale
+## Une question opérationnelle, pas seulement un score
 
 > Un modèle entraîné sur certaines attaques DDoS reconnaît-il une stratégie
 > DDoS jamais rencontrée ?
 
-**H1** - le multiclasses est plus difficile que le binaire.
+- Le binaire répond « attaque / pas attaque ».
+- Le SOC a besoin de la **famille** pour choisir la contre-mesure.
+- Une famille inconnue peut ressembler à du trafic bénin.
 
-**H2** - la généralisation dépend fortement de la famille laissée de côté.
+## Trois hypothèses à tester
 
-**H3** - une fraction des variables conserve l'essentiel de la performance.
+**H1** — le multiclasses est plus difficile que le binaire.
 
-## Données : 431 371 flux, 17 familles
+**H2** — la généralisation dépend fortement de la famille laissée de côté.
 
-- CIC-DDoS2019, 17 fichiers Parquet, 77 features.
-- 21 347 lignes dans des groupes de doublons exacts.
-- 8 858 empreintes présentes dans plus d'un fichier.
-- 5 289 empreintes avec labels contradictoires.
+**H3** — une fraction des variables conserve l'essentiel de la performance.
+
+Plan : données → protocole sans fuite → E1 → E2 → E3 → XAI.
+
+## 431 371 flux, 17 familles très déséquilibrées
+
+- CIC-DDoS2019 : 17 fichiers Parquet, 77 caractéristiques.
+- `DrDoS_NTP`, `TFTP` et `Benign` ≈ 74 % des lignes.
+- `WebDDoS` : 51 lignes seulement.
 - Après dédoublonnage : **418 884 lignes**.
 
-![](../figures/01_eda_family_imbalance.png){height=4.5cm}
+![Répartition des familles](../figures/01_eda_family_imbalance.png){height=5.0cm}
 
-## Le piège du split publié
+## Deux artefacts rendraient le score trompeur
 
-- `-testing` : toutes les familles `DrDoS_*` + TFTP + WebDDoS.
-- `-training` : LDAP, MSSQL, NetBIOS, Portmap, UDP.
-- Seules `Benign`, `Syn`, `UDPLag` chevauchent les deux.
+- 21 347 lignes dans des groupes de doublons exacts.
+- 5 289 empreintes avec des étiquettes contradictoires.
+- Le split publié partitionne les **mécanismes** :
+  `-testing` contient toutes les familles `DrDoS_*`.
 
-Utiliser ce split mesure la reconnaissance d'un **mécanisme**, pas la
-généralisation.  Il est écarté.
+Utiliser ce split mesure la reconnaissance d'un fichier, pas la généralisation.
+Le split retenu est donc aléatoire, stratifié par famille.
 
-![](../figures/01_eda_file_partition.png){height=4.0cm}
+## Protocole : dédoublonner, puis tirer au hasard
 
-## Protocole sans fuite
+1. Une ligne par empreinte de caractéristiques, avant tout split.
+2. Split stratifié 80/20 sur la famille fine, une fois par graine.
+3. Préprocessing dans une `Pipeline` ajustée sur le train.
+4. LOADO : purger la famille des **17 fichiers**, pas du fichier homonyme.
+5. Test équilibré : famille inconnue + `Benign` apparié.
+6. Métriques : Macro-F1, rappel par classe, PR-AUC, FPR.
 
-1. Dédoublonner **avant** le split (une ligne par empreinte).
-2. Ignorer le split publié.
-3. Split stratifié 80/20 sur la famille fine, une fois par graine.
-4. Preprocessing dans une `Pipeline` : colonnes constantes → scale → modèle.
-5. LOADO : purger la famille des **17 fichiers**, pas du fichier homonyme.
-6. Métriques : Macro-F1, rappel par classe, PR-AUC, FPR à TPR 95 %.
+## La baseline binaire est presque parfaite
 
-## Baseline binaire
+- Dummy stratifié : Macro-F1 = 0,5006.
+- Logistic regression : Macro-F1 = 0,9949,
+  FPR = 0,0026.
+- Random forest : Macro-F1 = 0,9991,
+  FPR = 0,0003.
 
-- Dummy stratifié : Macro-F1 = 0.501.
-- Régression logistique : Macro-F1 = 0.995, FPR = 0.0026.
-- Forêt aléatoire : Macro-F1 = 0.999, FPR = 0.0003.
+Le binaire est **facile**. Ce n'est pas une preuve de compréhension des types.
 
-Le binaire est **facile** : une frontière linéaire suffit presque.
+![Métriques de la baseline](../figures/02_baseline_metrics.png){height=4.7cm}
 
-![](../figures/02_baseline_metrics.png){height=3.6cm}
+## E1 : le multiclasses casse le score
 
-## E1 - le multiclasses casse le score
+- Binaire, random forest : Macro-F1 = 0,9991.
+- 13 classes, random forest : Macro-F1 = 0,7566,
+  Weighted-F1 = 0,9816.
+- Sans `Protocol` : Macro-F1 = 0,7577
+  (Δ = 0,0011).
 
-- Binaire RF : Macro-F1 = 0.999.
-- 13 classes RF : Macro-F1 = 0.757, Weighted-F1 = 0.982.
-- Sans `Protocol` : Macro-F1 = 0.758 (Δ = 0.001).
+**H1 soutenue.** Le score binaire ne prouve pas la compréhension des types.
 
-**H1 soutenue.**  Le score binaire ne prouve pas la compréhension des types.
+![Macro-F1 et Weighted-F1](../figures/03_exp1_macro_weighted_f1.png){height=4.7cm}
 
-![](../figures/03_exp1_macro_weighted_f1.png){height=3.6cm}
+## E1 : les familles rares paient le prix
 
-## E1 - les familles rares paient
-
-![](../figures/03_exp1_per_class_recall.png){height=4.8cm}
+- `WebDDoS` : rappel 0 sur 10 lignes de test.
+- `Portmap` : rappel ≈ 0,46 ; `DNS` : ≈ 0,53.
+- Les familles fréquentes restent au-dessus de 0,99.
 
 Le Weighted-F1 reste haut ; le Macro-F1 révèle les familles rares.
 
-## E2 - Leave-One-Attack-Out
+![Rappel par classe](../figures/03_exp1_per_class_recall.png){height=5.2cm}
 
-- 11 familles ≥ 1 000 lignes après dédoublonnage.
-- Purge de la famille dans les 17 fichiers.
-- Test équilibré : famille inconnue + Benign apparié.
+## E2 : tenir une famille entière hors de l'entraînement
+
+- 11 familles avec au moins 1 000 lignes après dédoublonnage.
+- Purge dans les 17 fichiers : Syn apparaît aussi dans `UDPLag-training`.
+- Test équilibré : famille inconnue + `Benign` apparié.
 - 11 × 3 modèles × 3 graines = **99 fits**.
-- Exclusion : DrDoS_LDAP 993, Portmap 400, NetBIOS 374,
-  DrDoS_NetBIOS 311, WebDDoS 49.
+- Exclues : `DrDoS_LDAP` (993), `Portmap` (400), `NetBIOS` (374),
+  `DrDoS_NetBIOS` (311), `WebDDoS` (49).
 
-![](../figures/04_exp2_purge_audit.png){height=4.0cm}
+![Lignes purgées par fichier](../figures/04_exp2_purge_audit.png){height=4.8cm}
 
-## E2 - la généralisation est asymétrique
+## E2 : dix familles généralisent, Syn non
 
-- Dix familles sur onze restent au-dessus de 0,96 (neuf au-dessus de 0,99).
-- Cas dur : **Syn** - Macro-F1 0.604 avec la RF (rappel ≈ 0,30),
-  mais 0.973 avec la régression logistique.
-- Le FPR reste bas : c'est le **rappel** qui s'effondre, pas les fausses alertes.
+- 10 familles sur 11 au-dessus de 0,96 ; 9 au-dessus de 0,99.
+- Meilleur score : **DrDoS_MSSQL**, 0,9995 (ex æquo).
+- **Syn** : 0,6035 avec la random forest (rappel 0,304).
+- La logistic regression atteint 0,9733 sur Syn.
+- Le FPR reste bas : c'est le **rappel** qui s'effondre.
 
-**H2 soutenue de façon asymétrique.**  La famille et le modèle comptent.
+**H2 soutenue de façon asymétrique.**
 
-![](../figures/04_exp2_family_model_heatmap.png){height=4.6cm}
+![Macro-F1 LOADO](../figures/04_exp2_family_model_heatmap.png){height=5.0cm}
 
-## E2 - à quelle famille connue ressemble l'inconnue ?
+## E2 : Syn ressemble à du trafic bénin
 
-![](../figures/04_exp2_confusion_to.png){height=4.6cm}
+- Syn prédite `Benign` (0,45) ou `UDPLag` (0,42), pas une famille d'attaque.
+- `DrDoS_MSSQL` est prédite `MSSQL` (0,83) ; `MSSQL` est prédite
+  `DrDoS_MSSQL` (0,88).
+- La matrice indique quelle mitigation l'analyste va tenter en premier.
 
-Cette matrice est plus actionnable qu'un F1 : elle indique la famille et la
-mitigation que l'analyste va essayer en premier.
+![Confusion vers les familles connues](../figures/04_exp2_confusion_to.png){height=5.1cm}
 
-## E3 - combien de features ?
+## E2 : le contrôle sibling ne change pas la conclusion
 
-- Top-10 : Macro-F1 binaire 0.993 vs 0.999 avec toutes.
-- En 13 classes : 0.663 vs 0.771 - la chute est plus nette.
-- Latence quasi identique (33.60 vs 33.25 ms/1k).
-- Le gain de latence du RF est faible : 300 arbres dominent le coût.
+- Purger aussi la famille sœur : `LDAP` + `DrDoS_LDAP`, etc.
+- Scores : LDAP 0,9985 ; MSSQL 0,9993 ; UDP 0,9996.
+- Minimum : 0,9980.
+
+Le résultat ne vient donc pas uniquement de la présence de la famille sœur.
+
+## E3 : 39 variables suffisent pour le multiclasses
+
+- Top-10 : Macro-F1 binaire 0,9928
+  contre 0,9989 avec toutes.
+- 13 classes : 0,6627 en Top-10,
+  0,7658 avec 39 variables,
+  0,7708 avec toutes.
+- En binaire, 10 variables suffisent presque ; en 13 classes, non.
 
 **H3 partiellement soutenue.**
 
-![](../figures/05_exp3_performance.png){height=4.2cm}
+![Performance vs nombre de variables](../figures/05_exp3_performance.png){height=4.8cm}
 
-## XAI - ce que le modèle regarde
+## E3 : la latence ne suit pas le nombre de variables
 
-- Feature la plus importante : **Init Fwd Win Bytes**
-  (importance moyenne 0.023).
-- Puis fenêtres TCP initiales (`Init Fwd/Bwd Win Bytes`) et `Flow Bytes/s`.
-- Les tailles moyennes et bulk-rates ne dominent pas ; sur Syn, ACK/URG flags
-  comptent.
-- Importance par permutation calculée sur le **test**.
+- Binaire : 33,25 ms → 33,60 ms
+  pour 1 000 flux.
+- 13 classes : 33,99 ms →
+  23,31 ms, mais forte dispersion.
+- La sélection coûte du temps d'ajustement :
+  2,5 s → 23,8 s.
+- Le coût dominant reste la traversée des arbres.
 
-![](../figures/06_xai_permutation_e1.png){height=4.0cm}
+![Latence vs nombre de variables](../figures/05_exp3_latency.png){height=4.8cm}
 
-## Réponses aux questions
+## XAI : en-têtes TCP, fenêtres et débit
 
-- **Q1** - Les familles qui généralisent le mieux recouvrent le profil
-  d'en-tête/fenêtre et de débit des familles vues ; Syn est l'exception pour la RF.
-- **Q2** - Non : binaire ≠ identification de famille.
-- **Q3** - Quelques dizaines de features suffisent pour l'essentiel ; les
-  familles rares perdent leur rappel en premier.
-- **Q4** - Rappel attaque, FPR, latence et débit ; pas l'accuracy.
+- **Init Fwd Win Bytes** : 0,023.
+- Puis `Bwd Header Length`, `Init Bwd Win Bytes`, `Flow Bytes/s`.
+- Sur Syn : `ACK Flag Count`, `Init Fwd Win Bytes`, `URG Flag Count`.
+- Permutation importance calculée sur le **test**, jamais sur le train.
 
-## Limites et conclusion
+![Permutation importance](../figures/06_xai_permutation_e1.png){height=4.8cm}
 
-- Capture de laboratoire 2019, pas de trafic chiffré ni de dérive.
+## Réponses aux quatre questions
+
+- **Q1** — Les familles qui recouvrent le profil d'en-tête, de fenêtre TCP et de
+  débit des familles vues généralisent le mieux ; Syn est l'exception.
+- **Q2** — Non : un bon binaire ne dit pas quel type d'attaque est en cours.
+- **Q3** — 10 variables en binaire, 39 à 58 en 13 classes.
+- **Q4** — Rappel attaque, FPR, latence et débit ; pas l'accuracy.
+
+## Limites
+
+- Capture de laboratoire 2019 : pas de trafic chiffré, pas de dérive.
 - Test E2 équilibré 1:1, pas la prévalence de production.
-- Familles rares exclues des rotations LOADO.
-- Latence mesurée sur un laptop, pas sur un équipement réseau.
-- Labels contradictoires : certains flux sont indistinguables.
+- Cinq familles rares exclues des rotations LOADO.
+- Latence mesurée sur un laptop, par lots, avec cache chaud.
+- 5 289 empreintes ont des étiquettes contradictoires.
+- Baseline et E1 sur une seule graine.
+
+## Conclusion
 
 1. Le binaire est un bon **triage**, pas un produit de classification.
-2. La généralisation dépend de la **famille** et du **modèle** : il faut une
+2. La généralisation dépend de la **famille** et du **modèle** : prévoir une
    classe « inconnue » et une revue humaine.
-3. La réduction de features aide, mais le choix du modèle reste décisif pour le
-   temps réel.
+3. La réduction de variables aide, mais le choix du modèle reste décisif pour
+   le temps réel.
 4. Les métriques de décision sont le rappel par famille, le FPR et la latence.
 
-**Merci - questions.**
+**Merci — questions.**

@@ -92,11 +92,9 @@ Les graines sont **42, 43, 44** pour E2 et E3 ; E1 et la baseline utilisent 42.
 Chaque notebook peut être exécuté seul ; `notebook_final.ipynb` enchaîne les six
 phases.
 
-> **État des résultats.**  Les CSV baseline, E2 et XAI sont complets.  Le CSV
-> E3 a été écrasé par un test réduit (`CAP=1000`, une seule graine) ; réexécuter
-> `05_exp3_features.ipynb` en entier avant de lancer `build_report.py` ou
-> `build_slides.py`.  Les PDF actuellement livrés correspondent encore aux
-> exécutions complètes précédentes.
+> **État des résultats.**  Les CSV baseline, E1, E2, E3 et XAI sont complets.
+> E3 contient bien 30 fits (deux tâches, cinq variantes, trois graines).  Les PDF
+> du rapport et des slides sont reconstruits à partir de ces CSV.
 
 ### Temps d'exécution observés
 
@@ -141,9 +139,10 @@ scripts/                 # build_report.py, build_slides.py
 - Les familles rares (< 1 000 lignes après dédoublonnage) sont exclues des
   rotations LOADO : DrDoS_LDAP (993), Portmap (400), NetBIOS (374),
   DrDoS_NetBIOS (311), WebDDoS (49).
-- La latence E3 est mesurée sur un laptop en batch, pas sur un équipement
+- La latence E3 est mesurée sur un laptop, par lots, pas sur un équipement
   réseau.
-- Le rapport est rédigé en français ; le code et les notebooks sont en anglais.
+- Le rapport, les slides et les commentaires des notebooks sont en français ;
+  les identifiants de code (variables, fonctions, colonnes) restent en anglais.
 
 ## Utilisation de l'IA
 
